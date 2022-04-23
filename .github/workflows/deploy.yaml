@@ -1,0 +1,55 @@
+name: Deployment to the VPS
+on: [push]
+branches: [main]
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+        with:
+          ref: dist
+          path: target/dist
+      - name: Get Rust Stable
+        uses: actions-rs/toolchain@v2
+        with:
+          toolchain: stable
+      - name: Install Trunk
+        uses: actions-rs/install@v0.1
+        with:
+          crate: trunk
+          version: latest
+          use-tool-cache: true
+      - name: Run Tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+      - name: Build Backend
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: -p backend --release
+      - name: Deploy Backend
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          fingerprint: ${{ secrets.FINGERPRINT }}
+          port: ${{ secrets.PORT }}
+          source: "target/release/backend"
+          target: "otango"
+      - name: Build Frontend
+        working-directory: frontend
+        run: trunk build --release
+      - name: Deploy frontend to pagess
+        run: |
+          rm -rf target/dist/*
+          mv frontend/dist/* target/dist/
+          cd target/dist
+          git config user.name 'Automated Deployment'
+          git config user.email 'aidan@trifuse.xyz'
+          git add .
+          git commit -m 'Deployed Frontend'
+          git push
+      
