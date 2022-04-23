@@ -1,0 +1,26 @@
+{
+    "version": 0,
+    "words": [
+        {
+            "word": "誕生日",
+            "definition": "Birthday",
+            "image": null,
+            "pronunciation": {
+                "kana": "たんじょうび",
+                "pitch": "LHHLL",
+                "audio": [
+                    "male_誕生日"
+                ]
+            }
+        }
+    ],
+    "kanji": [
+        
+    ],
+    "sentences": [
+
+    ],
+    "resources": [
+        { "name": "male_誕生日", "kind": "audio", "uri": "http://example.com/audio/male/誕生日.1.m4a" }
+    ]
+}
