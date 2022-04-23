@@ -21,17 +21,17 @@ jobs:
           crate: trunk
           version: latest
           use-tool-cache: true
-      - name: Run Tests
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
+      # - name: Run Tests
+      #   uses: actions-rs/cargo@v1
+      #   with:
+      #     command: test
       - name: Build Backend
         uses: actions-rs/cargo@v1
         with:
           command: build
           args: -p backend --release
       - name: Deploy Backend
-        uses: appleboy/ssh-action@v0.1.4
+        uses: appleboy/scp-action@v0.0.1
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
@@ -43,7 +43,7 @@ jobs:
       - name: Build Frontend
         working-directory: frontend
         run: trunk build --release
-      - name: Deploy frontend to pagess
+      - name: Deploy frontend to pages
         run: |
           rm -rf target/dist/*
           mv frontend/dist/* target/dist/
