@@ -12,7 +12,7 @@ jobs:
           ref: dist
           path: target/dist
       - name: Get Rust Stable
-        uses: actions-rs/toolchain@v2
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
       - name: Install Trunk
