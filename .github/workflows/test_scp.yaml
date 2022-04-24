@@ -8,17 +8,13 @@ jobs:
     steps:
       - name: Test File
         run: echo 'Apples' > a
-      - name: Print Fignerprint
-        run: |
-          echo '${{ secrets.KEY }}' > key
-          ssh -i key root@mail.trifuse.xyz ssh-keygen -l -f /etc/ssh/ssh_host_ed25519_key.pub | cut -d ' ' -f2
       - name: Test SCP
         uses: appleboy/scp-action@v0.1.2
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
-          fingerprint: ${{ secrets.FINGERPRINT }}
+          #fingerprint: ${{ secrets.FINGERPRINT }}
           port: ${{ secrets.PORT }}
           source: "a"
           target: "otango"
