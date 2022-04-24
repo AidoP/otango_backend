@@ -48,6 +48,7 @@ jobs:
         run: |
           rm -rf target/dist/*
           mv frontend/dist/* target/dist/
+          cp target/dist/index.html target/dist/404.html
           cd target/dist
           git config user.name 'Automated Deployment'
           git config user.email 'aidan@trifuse.xyz'
