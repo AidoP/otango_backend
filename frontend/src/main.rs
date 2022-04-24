@@ -16,6 +16,8 @@ use lesson::Lesson;
 
 #[derive(Clone, Routable, PartialEq)]
 enum Route {
+    #[at("/:path")]
+    Other { path: String },
     #[at("/")]
     Lesson,
     #[at("/w/:word")]
@@ -29,6 +31,7 @@ enum Route {
 
 fn switch(routes: &Route) -> Html {
     match routes {
+        Route::Other { path } => html!(<h1>{path}</h1>),
         Route::Lesson => html! { <Lesson /> },
         Route::Word { word } => {
             if let Ok(word) = urlencoding::decode(word) {
