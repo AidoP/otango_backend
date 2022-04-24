@@ -8,6 +8,13 @@ jobs:
     steps:
       - name: Test File
         run: echo 'Apples' > a
+      - name: Print fingerprint
+        run: |
+          ssh-keyscan -t ed25519 mail.trifuse.xyz 2> /dev/null > key
+          echo 'Key:'
+          cat key
+          echo 'Fingerprint:'
+          ssh-keygen -l -f key
       - name: Test SCP
         uses: appleboy/scp-action@v0.1.2
         with:
