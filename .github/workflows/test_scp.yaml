@@ -17,4 +17,4 @@ jobs:
           #fingerprint: ${{ secrets.FINGERPRINT }}
           port: ${{ secrets.PORT }}
           source: "a"
-          target: "otango"
+          target: "."
