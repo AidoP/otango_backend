@@ -21,10 +21,10 @@ jobs:
           crate: trunk
           version: latest
           use-tool-cache: true
-        - name: Run Tests
-          uses: actions-rs/cargo@v1
-          with:
-            command: test
+      - name: Run Tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
       - name: Build Backend
         uses: actions-rs/cargo@v1
         with:
