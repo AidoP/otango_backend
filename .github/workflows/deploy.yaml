@@ -35,14 +35,26 @@ jobs:
           args: -p backend --release
       - name: Deploy Backend
         uses: appleboy/scp-action@v0.1.2
+        working-directory: target/release/
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           #fingerprint: ${{ secrets.FINGERPRINT }}
           port: ${{ secrets.PORT }}
-          source: "target/release/backend"
-          target: "otango"
+          source: "backend"
+          target: "."
+      - name: Start Backend Service
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          #fingerprint: ${{ secrets.FINGERPRINT }}
+          port: ${{ secrets.PORT }}
+          script: |
+            mv backend otango
+            sudo systemctl restart otango.service
       - name: Build Frontend
         working-directory: frontend
         env:
