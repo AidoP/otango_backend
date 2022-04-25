@@ -16,7 +16,7 @@ impl Component for Word {
 
     fn create(ctx: &Context<Self>) -> Self {
         let scope = ctx.link().clone();
-        let url = format!("https://192.168.1.128:8000/単語/{}", urlencoding::encode(&ctx.props().word));
+        let url = format!("単語/{}", urlencoding::encode(&ctx.props().word));
         Self {
             word: LazyData::load(&url, move |data| scope.send_message(data))
         }

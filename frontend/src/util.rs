@@ -57,7 +57,7 @@ impl<T> LazyData<T> {
 }
 impl<T: for<'de> Deserialize<'de>> LazyData<T> {
     pub fn load<F: 'static + FnOnce(Self)>(url: &str, and_then: F) -> Self {
-        let request = gloo_net::http::Request::new(url);
+        let request = gloo_net::http::Request::new(&format!("{}/{}", crate::BACKEND, url));
         wasm_bindgen_futures::spawn_local(async move {
             let response = request.send().await
                 .map_err(|e| e.into())

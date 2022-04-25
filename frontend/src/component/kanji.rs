@@ -16,7 +16,7 @@ impl Component for Kanji {
 
     fn create(ctx: &Context<Self>) -> Self {
         let scope = ctx.link().clone();
-        let url = format!("https://192.168.1.128:8000/漢字/{}", urlencoding::encode(&ctx.props().kanji));
+        let url = format!("漢字/{}", urlencoding::encode(&ctx.props().kanji));
         Self {
             kanji: LazyData::load(&url, move |data| scope.send_message(data))
         }
