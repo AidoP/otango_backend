@@ -14,6 +14,8 @@ mod util;
 mod lesson;
 use lesson::Lesson;
 
+const BACKEND: &'static str = env!("BACKEND");
+
 #[derive(Clone, Routable, PartialEq)]
 enum Route {
     #[at("/")]
