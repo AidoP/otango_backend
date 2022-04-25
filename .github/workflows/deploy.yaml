@@ -24,6 +24,10 @@ jobs:
           use-tool-cache: true
       - name: Run Tests
         uses: actions-rs/cargo@v1
+        env:
+          FRONTEND_LOCATION: https://portfolio.trifuse.xyz/otango
+          BACKEND: 'https://otango.trifuse.xyz'
+          BASE_URL: /otango/
         with:
           command: test
       - name: Build Backend
@@ -57,7 +61,7 @@ jobs:
       - name: Build Frontend
         working-directory: frontend
         env:
-          BACKEND: https://otango.trifuse.xyz
+          BACKEND: 'https://otango.trifuse.xyz'
           BASE_URL: /otango/
         run: trunk build --release --public-url '/otango/'
       - name: Deploy frontend to pages
