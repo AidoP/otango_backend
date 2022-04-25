@@ -43,6 +43,8 @@ jobs:
           target: "otango"
       - name: Build Frontend
         working-directory: frontend
+        env:
+          BASE_URL: /otango/
         run: trunk build --release --public-url '/otango/'
       - name: Deploy frontend to pages
         run: |
