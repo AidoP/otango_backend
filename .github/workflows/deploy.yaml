@@ -45,7 +45,7 @@ jobs:
           key: ${{ secrets.KEY }}
           #fingerprint: ${{ secrets.FINGERPRINT }}
           port: ${{ secrets.PORT }}
-          source: "target/build/backend"
+          source: "target/release/backend"
           target: "."
       - name: Start Backend Service
         uses: appleboy/ssh-action@v0.1.4
@@ -56,7 +56,7 @@ jobs:
           #fingerprint: ${{ secrets.FINGERPRINT }}
           port: ${{ secrets.PORT }}
           script: |
-            mv target/build/backend otango
+            mv target/release/backend otango
             sudo systemctl restart otango.service
       - name: Build Frontend
         working-directory: frontend
