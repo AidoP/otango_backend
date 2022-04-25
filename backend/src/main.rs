@@ -7,6 +7,8 @@ use r2d2_sqlite::SqliteConnectionManager;
 
 use common::data;
 
+const FRONTEND_LOCATION: Option<&'static str> = option_env!("FRONTEND_LOCATION");
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let mut ssl = SslAcceptor::mozilla_modern_v5(SslMethod::tls())?;
@@ -17,11 +19,15 @@ async fn main() -> std::io::Result<()> {
     let pool = Pool::new(manager).unwrap();
 
     HttpServer::new(move || {
+        let cors = Cors::default();
+        let cors = if let Some(location) = FRONTEND_LOCATION {
+            cors.allowed_origin(location)
+        } else {
+            cors.allow_any_origin()
+        };
         App::new()
             .app_data(web::Data::new(pool.clone()))
-            .wrap(Cors::default()
-                .allowed_origin("http://192.168.1.128:8080")
-            )
+            .wrap(cors)
             .service(index)
             .service(word)
             .service(kanji)
@@ -34,9 +40,14 @@ async fn main() -> std::io::Result<()> {
 
 #[get("/")]
 async fn index() -> impl Responder {
-    HttpResponse::PermanentRedirect()
-        .append_header(("Location", "http://192.168.1.128:8080"))
-        .finish()
+    if let Some(location) = FRONTEND_LOCATION {
+        HttpResponse::PermanentRedirect()
+            .append_header(("Location", location))
+            .finish()
+    } else {
+        HttpResponse::NotFound()
+            .finish()
+    }
 }
 
 /*

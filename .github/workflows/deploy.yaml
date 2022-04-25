@@ -28,6 +28,8 @@ jobs:
           command: test
       - name: Build Backend
         uses: actions-rs/cargo@v1
+        env:
+          FRONTEND_LOCATION: https://portfolio.trifuse.xyz/otango
         with:
           command: build
           args: -p backend --release
