@@ -1,3 +1,22 @@
+CREATE TABLE `user` (
+    `name`          TEXT,
+    `contact`       TEXT,
+    `image`         BLOB,
+    `privilege`     INTEGER,
+    `pubkey`        TEXT
+);
+CREATE UNIQUE INDEX `idx_user_name`
+    ON `user`(`name`);
+
+CREATE TABLE `challenge` (
+    `user`          INTEGER,
+    `challenge`     TEXT,
+    `expires`       DATETIME,
+    FOREIGN KEY (`user`)            REFERENCES `user`(`rowid`)
+);
+CREATE UNIQUE INDEX `idx_challenge`
+    ON `challenge`(`challenge`);
+
 CREATE TABLE `tag` (
     `tag`           TEXT
 );
@@ -5,6 +24,8 @@ CREATE TABLE `tag` (
 CREATE TABLE `word` (
     `word`          TEXT
 );
+CREATE UNIQUE INDEX `idx_word`
+    ON `word`(`word`);
 CREATE TABLE `word_tag` (
     `word`          INTEGER,
     `tag`           INTEGER,
@@ -26,6 +47,8 @@ CREATE TABLE `kanji` (
     `kanji`         CHAR(1),
     `memonic`       TEXT
 );
+CREATE UNIQUE INDEX `idx_kanji`
+    ON `kanji`(`kanji`);
 CREATE TABLE `kanji_tag` (
     `kanji`         INTEGER,
     `tag`           INTEGER,

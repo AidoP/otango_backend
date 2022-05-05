@@ -1,14 +1,31 @@
-use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
+use std::{
+    net::{Ipv4Addr, SocketAddr, SocketAddrV4}
+};
 
-use actix_web::{error, Error, get, web, App, HttpResponse, HttpServer, Responder, http::header::ContentType};
 use actix_cors::Cors;
+use actix_web::{
+    App,
+    get,
+    http::header::ContentType,
+    HttpResponse,
+    HttpServer,
+    post,
+    Responder,
+    web
+};
 use once_cell::sync::OnceCell;
-use openssl::ssl::{SslAcceptor, SslMethod, SslFiletype};
-
-type Pool = r2d2::Pool<SqliteConnectionManager>;
+use openssl::ssl::{ SslAcceptor, SslMethod, SslFiletype };
 use r2d2_sqlite::SqliteConnectionManager;
 
-use common::data;
+mod data;
+mod error;
+
+use prelude::*;
+mod prelude {
+    pub use crate::error::{Error, Result};
+}
+
+type Pool = r2d2::Pool<SqliteConnectionManager>;
 
 #[derive(Debug, config::Config)]
 struct Config {
@@ -46,7 +63,9 @@ async fn main() -> std::io::Result<()> {
     let pool = Pool::new(manager).unwrap();
 
     HttpServer::new(move || {
-        let mut cors = Cors::default();
+        let mut cors = Cors::default()
+            .allow_any_method()
+            .allowed_header("Content-Type");
         if config.allowed_origins.is_empty() {
             cors = cors.allow_any_origin();
         } else {
@@ -55,8 +74,14 @@ async fn main() -> std::io::Result<()> {
             }
         }
         App::new()
+    //        .app_data(web::Data::new(auth::ChallengeStore::default()))
             .app_data(web::Data::new(pool.clone()))
             .wrap(cors)
+
+            .service(register)
+            .service(challenge)
+            .service(verify)
+
             .service(index)
             .service(word)
             .service(kanji)
@@ -95,15 +120,13 @@ async fn all_words(db: web::Data<Pool>) -> Result<impl Responder, Error> {
     )
 }*/
 
-#[get("/単語/{word}")]
-async fn word(db: web::Data<Pool>, path: web::Path<String>) -> Result<impl Responder, Error> {
+#[get("/word/{word}")]
+async fn word(db: web::Data<Pool>, path: web::Path<String>) -> Result<impl Responder> {
     let word = path.into_inner();
     let c = web::block(move || db.get())
-        .await?
-        .map_err(error::ErrorInternalServerError)?;
+        .await??;
     let word = web::block(move || data::Word::get(&c, &word))
-        .await?
-        .map_err(error::ErrorInternalServerError)?;
+        .await??;
 
     if let Some(word) = word {
         Ok(HttpResponse::Ok()
@@ -115,15 +138,13 @@ async fn word(db: web::Data<Pool>, path: web::Path<String>) -> Result<impl Respo
     }
 }
 
-#[get("/漢字/{kanji}")]
-async fn kanji(db: web::Data<Pool>, path: web::Path<char>) -> Result<impl Responder, Error> {
+#[get("/kanji/{kanji}")]
+async fn kanji(db: web::Data<Pool>, path: web::Path<char>) -> Result<impl Responder> {
     let kanji = path.into_inner();
     let c = web::block(move || db.get())
-        .await?
-        .map_err(error::ErrorInternalServerError)?;
+        .await??;
     let kanji = web::block(move || data::Kanji::get(&c, kanji))
-        .await?
-        .map_err(error::ErrorInternalServerError)?;
+        .await??;
 
     if let Some(kanji) = kanji {
         Ok(HttpResponse::Ok()
@@ -133,4 +154,40 @@ async fn kanji(db: web::Data<Pool>, path: web::Path<char>) -> Result<impl Respon
     } else {
         Ok(HttpResponse::NotFound().finish())
     }
+}
+
+#[post("/auth/register")]
+async fn register(db: web::Data<Pool>, signed: web::Json<data::Signed<data::Certificate>>) -> Result<impl Responder> {
+    let cert = signed.into_inner().verify()?;
+
+    let user = data::User {
+        name: cert.name,
+        contact: cert.contact,
+        image: None,
+        privilege: data::Privilege::None,
+        pubkey: cert.pubkey
+    };
+
+    let c = web::block(move || db.get())
+        .await??;
+    web::block(move || user.insert(&c))
+        .await??;
+
+    Ok(HttpResponse::Created())
+}
+#[post("/auth/challenge")]
+async fn challenge(db: web::Data<Pool>, signed: web::Json<data::Signed<String>>) -> Result<impl Responder> {
+    let c = web::block(move || db.get())
+        .await??;
+    return Ok(serde_json::to_string(&data::Challenge::generate(&c, &signed.into_inner().verify_user(&c)?)?)?);
+}
+
+#[post("/auth/unregister")]
+async fn verify(db: web::Data<Pool>, signed: web::Json<data::Signed<data::By<()>>>) -> Result<impl Responder> {
+    let signed = signed.into_inner();
+    let c = web::block(move || db.get())
+        .await??;
+    web::block(move || signed.verify(&c))
+        .await??;
+    Ok(HttpResponse::Ok().body("Deleted"))
 }

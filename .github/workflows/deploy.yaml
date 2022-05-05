@@ -7,37 +7,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/checkout@v3
-        with:
-          ref: dist
-          path: target/dist
       - name: Get Rust Stable
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          target: wasm32-unknown-unknown
-      - name: Install Trunk
-        uses: actions-rs/install@v0.1
-        with:
-          crate: trunk
-          version: latest
-          use-tool-cache: true
       - name: Run Tests
         uses: actions-rs/cargo@v1
-        env:
-          FRONTEND_LOCATION: https://portfolio.trifuse.xyz/otango
-          BACKEND: 'https://otango.trifuse.xyz'
-          BASE_URL: /otango/
         with:
           command: test
-      - name: Build Backend
+      - name: Build
         uses: actions-rs/cargo@v1
-        env:
-          FRONTEND_LOCATION: https://portfolio.trifuse.xyz/otango
         with:
           command: build
-          args: -p backend --release
-      - name: Deploy Backend
+          args: --release
+      - name: Deploy
         uses: appleboy/scp-action@v0.1.2
         with:
           host: ${{ secrets.HOST }}
@@ -45,9 +28,9 @@ jobs:
           key: ${{ secrets.KEY }}
           #fingerprint: ${{ secrets.FINGERPRINT }}
           port: ${{ secrets.PORT }}
-          source: "target/release/backend"
+          source: "target/release/otango"
           target: "."
-      - name: Start Backend Service
+      - name: Start Service
         uses: appleboy/ssh-action@v0.1.4
         with:
           host: ${{ secrets.HOST }}
@@ -56,23 +39,5 @@ jobs:
           #fingerprint: ${{ secrets.FINGERPRINT }}
           port: ${{ secrets.PORT }}
           script: |
-            mv target/release/backend otango
+            mv target/release/otango otango
             sudo systemctl restart otango.service
-      - name: Build Frontend
-        working-directory: frontend
-        env:
-          BACKEND: 'https://otango.trifuse.xyz'
-          BASE_URL: /otango/
-        run: trunk build --release --public-url '/otango/'
-      - name: Deploy frontend to pages
-        run: |
-          rm -rf target/dist/*
-          mv frontend/dist/* target/dist/
-          cp target/dist/index.html target/dist/404.html
-          cd target/dist
-          git config user.name 'Automated Deployment'
-          git config user.email 'aidan@trifuse.xyz'
-          git add .
-          git commit -m 'Deployed Frontend'
-          git push
-      
