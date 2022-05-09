@@ -20,6 +20,8 @@ CREATE UNIQUE INDEX `idx_challenge`
 CREATE TABLE `tag` (
     `tag`           TEXT
 );
+CREATE UNIQUE INDEX `idx_tag`
+    ON `tag`(`tag`);
 
 CREATE TABLE `word` (
     `word`          TEXT
